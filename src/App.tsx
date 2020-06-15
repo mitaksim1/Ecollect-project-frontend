@@ -4,11 +4,11 @@ import './App.css';
 /**
  * Import des composants
  */
-import Home from './pages/Home';
+import Routes from './routes';
 
 function App() {
   return (
-      <Home />
+      <Routes />
   );
 }
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import { FiLogIn } from 'react-icons/fi';
+import { Link } from 'react-router-dom';
 
 import './styles.css';
 
@@ -17,12 +18,12 @@ const Home = () => {
                     <h1>Votre marketplace de collecte de déchets</h1>
                     <p>Nous vous aidons à trouver des points de collecte pour tous vos déchets !</p>
 
-                    <a href="/inscription">
+                    <Link to="/create-point">
                         <span>
                             <FiLogIn />
                         </span>
                         <strong>Inscrivez un point de collecte</strong>
-                    </a>
+                    </Link>
                 </main>
             </div>
         </div>

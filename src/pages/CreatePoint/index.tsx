@@ -1,12 +1,29 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FiArrowLeft } from 'react-icons/fi';
+import { Map, TileLayer, Marker } from 'react-leaflet';
+import api from '../../services/api';
 
 import './styles.css';
 
 import logo from '../../assets/logo.svg';
 
+// Définition des types des données attendues pour les items
+interface Item {
+    id: number;
+    title: string;
+    image_url: string
+}
+
 const CreatePoint = () => {
+    const [items, setItems] = useState([]);
+
+    useEffect(() => {
+        api.get('items').then(response => {
+            setItems(response.data);
+        })
+    }, []);
+
     return (
         <div id="page-create-point">
             <header>
@@ -63,6 +80,15 @@ const CreatePoint = () => {
                         <span>Séléctionnez une adresse dans la carte</span>
                     </legend>
 
+                    <Map center={[45.8703421, 1.2636387]} zoom={15}>
+                        <TileLayer
+                            attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        />
+
+                        <Marker position={[45.8703421, 1.2636387]} />
+                    </Map>
+
                     <div className="field-group">
                         <div className="field">
                             <label htmlFor="region">Region</label>
@@ -86,32 +112,18 @@ const CreatePoint = () => {
                     </legend>
 
                     <ul className="items-grid">
-                        <li>
-                            <img src="http://localhost:3333/uploads/huiles.svg"alt="Teste"/>
+                        {items.map(item => (
+                          <li>
+                            < img src="http://localhost:3333/uploads/huiles.svg"alt="Teste"/>
                             <span>Huile</span>
-                        </li>
-                        <li>
-                            <img src="http://localhost:3333/uploads/batteries.svg"alt="Teste"/>
-                            <span>Batterie</span>
-                        </li>
-                        <li>
-                            <img src="http://localhost:3333/uploads/organiques.svg"alt="Teste"/>
-                            <span>Huile</span>
-                        </li>
-                        <li>
-                            <img src="http://localhost:3333/uploads/lampes.svg"alt="Teste"/>
-                            <span>Huile</span>
-                        </li>
-                        <li>
-                            <img src="http://localhost:3333/uploads/papiers-cartons.svg"alt="Teste"/>
-                            <span>Huile</span>
-                        </li>
-                        <li>
-                            <img src="http://localhost:3333/uploads/electroniques.svg"alt="Teste"/>
-                            <span>Electroniques</span>
-                        </li>
+                         </li>  
+                        ))}    
                     </ul>
                 </fieldset>
+
+                <button type="submit">
+                    Enregistrer ce point de collecte
+                </button>
             </form>
         </div>
     )

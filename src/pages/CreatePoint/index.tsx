@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, ChangeEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { FiArrowLeft } from 'react-icons/fi';
 import { Map, TileLayer, Marker } from 'react-leaflet';
+import axios from 'axios';
 import api from '../../services/api';
 
 import './styles.css';
@@ -15,14 +16,62 @@ interface Item {
     image_url: string
 }
 
-const CreatePoint = () => {
-    const [items, setItems] = useState([]);
+interface APIRegionResponse {
+    nom: string;
+}
 
+const CreatePoint = () => {
+    /**
+     * State: items
+     */
+    const [items, setItems] = useState<Item[]>([]); // On pourrait aussi écrire useState<Array<Item>>([])
+
+    /**
+     * State: regions
+     */
+    const [regions, setRegions] = useState<string[]>([]);
+
+    /**
+     * State région séléctionné
+     */
+    const [selectedRegion, setSelectedRegion] = useState('0');
+
+    /**
+     * Récupères les item de notre api
+     */
     useEffect(() => {
         api.get('items').then(response => {
             setItems(response.data);
         })
     }, []);
+
+    /**
+     * Récupères la localisation grâce à l'api géoGouv
+     */
+    useEffect(() => {
+        axios.get<APIRegionResponse[]>('https://geo.api.gouv.fr/departements').then(response => {
+            // console.log(response);
+            const regions = response.data.map(region => region.nom);
+
+            setRegions(regions);
+        });
+    }, []);
+
+    /**
+     * Recupères les villes selon région
+     */
+    useEffect(() => {
+
+    }, []);
+
+    /**
+     * 
+     */
+    function handleSelectRegion(event: ChangeEvent<HTMLSelectElement>) {
+        const region = (event.target.value);
+
+        setSelectedRegion(region);
+    }
 
     return (
         <div id="page-create-point">
@@ -92,8 +141,16 @@ const CreatePoint = () => {
                     <div className="field-group">
                         <div className="field">
                             <label htmlFor="region">Region</label>
-                            <select name="region" id="region">
+                            <select 
+                                name="region" 
+                                id="region" 
+                                value={selectedRegion} 
+                                onChange={handleSelectRegion}
+                            >
                                 <option value="0">Séléctionnez une région</option>
+                                {regions.map(region => (
+                                    <option key={region} value={region}>{region}</option>
+                                ))}
                             </select>
                         </div>
                         <div className="field">
@@ -113,9 +170,9 @@ const CreatePoint = () => {
 
                     <ul className="items-grid">
                         {items.map(item => (
-                          <li>
-                            < img src="http://localhost:3333/uploads/huiles.svg"alt="Teste"/>
-                            <span>Huile</span>
+                          <li key={item.id}>
+                            < img src={item.image_url} alt={item.title} />
+                            <span>{item.title}</span>
                          </li>  
                         ))}    
                     </ul>

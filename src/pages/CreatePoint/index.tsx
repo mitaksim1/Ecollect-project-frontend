@@ -18,7 +18,13 @@ interface Item {
 
 interface APIRegionResponse {
     nom: string;
+    code: number;
 }
+
+interface APICityResponse {
+    nom: string;
+}
+
 
 const CreatePoint = () => {
     /**
@@ -29,12 +35,17 @@ const CreatePoint = () => {
     /**
      * State: regions
      */
-    const [regions, setRegions] = useState<string[]>([]);
+    const [regions, setRegions] = useState<number[]>([]);
 
     /**
-     * State région séléctionné
+     * State: région séléctionné
      */
     const [selectedRegion, setSelectedRegion] = useState('0');
+
+    /**
+     * State: cities
+     */
+    const [cities, setCities] = useState<string[]>([]);
 
     /**
      * Récupères les item de notre api
@@ -51,7 +62,7 @@ const CreatePoint = () => {
     useEffect(() => {
         axios.get<APIRegionResponse[]>('https://geo.api.gouv.fr/departements').then(response => {
             // console.log(response);
-            const regions = response.data.map(region => region.nom);
+            const regions = response.data.map(region => region.code);
 
             setRegions(regions);
         });
@@ -61,11 +72,22 @@ const CreatePoint = () => {
      * Recupères les villes selon région
      */
     useEffect(() => {
+        if (selectedRegion === '0') {
+            return;
+        }
 
-    }, []);
+        axios
+            .get<APICityResponse[]>(`https://geo.api.gouv.fr/departements/${selectedRegion}/communes`)
+            .then(response => {
+                // console.log(response);
+                const cityNames = response.data.map(city => city.nom);
+
+                setCities(cityNames);
+        });
+    }, [selectedRegion]);
 
     /**
-     * 
+     * Récupères la région choisi par l'utilisateur
      */
     function handleSelectRegion(event: ChangeEvent<HTMLSelectElement>) {
         const region = (event.target.value);
@@ -157,6 +179,9 @@ const CreatePoint = () => {
                             <label htmlFor="city">Ville</label>
                             <select name="city" id="city">
                                 <option value="0">Séléctionnez une ville</option>
+                                {cities.map(city => (
+                                    <option key={city} value={city}>{city}</option>
+                                ))}
                             </select>
                         </div>
                     </div>

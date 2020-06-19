@@ -49,13 +49,49 @@ const CreatePoint = () => {
     const [cities, setCities] = useState<string[]>([]);
 
     /**
+     * State: position initial
+     */
+    const [initialPosition, setInitialPosition] = useState<[number, number]>([0, 0]);
+
+    /**
      * State: ville séléctionnée
      */
-
     const [selectedCity, setSelectedCity] = useState('0');
 
     /**
-     * Récupères les item de notre api
+     * State: point séléctionné sur la carte
+     */
+    const [selectedPosition, setSelectedPosition] = useState<[number, number]>([0, 0]);
+
+    /**
+     * State: enregistre les valeurs pour inscription d'un utilisateur
+     */
+    const [inputData, setInputData] = useState({
+        name: '',
+        email: '',
+        telephone: '',
+    });
+
+    /**
+     * State: items séléctionnés
+     */
+    const [selectedItems, setSelectedItems] = useState<number[]>([]);
+
+    /**
+     * Récupères position initial dès chargement de la carte
+     */
+    useEffect(() => {
+        navigator.geolocation.getCurrentPosition(position => {
+            // console.log(position);
+
+            const {latitude, longitude} = position.coords;
+
+            setInitialPosition([latitude, longitude]);
+        });
+    }, []);
+
+    /**
+     * Récupères les items de notre api
      */
     useEffect(() => {
         api.get('items').then(response => {
@@ -115,7 +151,36 @@ const CreatePoint = () => {
      * Choisi un point de collecte sur la carte
      */
     function handleMapClick(event: LeafletMouseEvent) {
-        console.log(event.latlng);
+       setSelectedPosition([
+           event.latlng.lat,
+           event.latlng.lng,
+       ]);
+    }
+
+    /**
+     * Stocke les valeurs de l'input 
+     */
+    function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
+        // console.log(event.target.name, event.target.value);
+        const { name, value } = event.target;
+
+        setInputData({ ...inputData, [name]: value });
+    }
+
+    /**
+     * Stocke les items séléctionnées par l'utilisateur
+     */
+    function handleSelectItem(id: number) {
+        // console.log('teste', id);   
+        const alreadySelected = selectedItems.findIndex(item => item === id);
+
+        if (alreadySelected >= 0) {
+            const filteredItems = selectedItems.filter(item => item !== id);
+
+            setSelectedItems(filteredItems);
+        } else {
+            setSelectedItems([ ...selectedItems, id ]);
+        }  
     }
 
 
@@ -127,7 +192,7 @@ const CreatePoint = () => {
                 <Link to="/">
                     <FiArrowLeft />
                     Retour à la page d'accueil
-                </Link>;   
+                </Link>  
             </header>
 
             <form>
@@ -143,7 +208,8 @@ const CreatePoint = () => {
                          <input 
                              type="text"
                              name="name"
-                             id="name"                        
+                             id="name"  
+                             onChange={handleInputChange}                      
                          />
                     </div>
 
@@ -153,7 +219,8 @@ const CreatePoint = () => {
                          <input 
                              type="email"
                              name="email"
-                             id="email"                        
+                             id="email"   
+                             onChange={handleInputChange}                      
                          />
                     </div>
 
@@ -162,7 +229,8 @@ const CreatePoint = () => {
                          <input 
                              type="text"
                              name="telephone"
-                             id="telephone"                        
+                             id="telephone" 
+                             onChange={handleInputChange}                        
                          />
                     </div>
                    </div>
@@ -175,13 +243,13 @@ const CreatePoint = () => {
                         <span>Séléctionnez une adresse dans la carte</span>
                     </legend>
 
-                    <Map center={[45.8703421, 1.2636387]} zoom={15} onClick={handleMapClick}>
+                    <Map center={initialPosition} zoom={15} onClick={handleMapClick}>
                         <TileLayer
                             attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         />
 
-                        <Marker position={[45.8703421, 1.2636387]} />
+                        <Marker position={selectedPosition} />
                     </Map>
 
                     <div className="field-group">
@@ -224,7 +292,11 @@ const CreatePoint = () => {
 
                     <ul className="items-grid">
                         {items.map(item => (
-                          <li key={item.id}>
+                          <li 
+                          key={item.id} 
+                          onClick={() => handleSelectItem(item.id)}
+                          className={selectedItems.includes(item.id) ?'selected' : ''}
+                          >
                             < img src={item.image_url} alt={item.title} />
                             <span>{item.title}</span>
                          </li>  

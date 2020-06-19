@@ -2,6 +2,7 @@ import React, { useEffect, useState, ChangeEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { FiArrowLeft } from 'react-icons/fi';
 import { Map, TileLayer, Marker } from 'react-leaflet';
+import { LeafletMouseEvent } from 'leaflet';
 import axios from 'axios';
 import api from '../../services/api';
 
@@ -110,6 +111,14 @@ const CreatePoint = () => {
         setSelectedCity(city);
     }
 
+    /**
+     * Choisi un point de collecte sur la carte
+     */
+    function handleMapClick(event: LeafletMouseEvent) {
+        console.log(event.latlng);
+    }
+
+
     return (
         <div id="page-create-point">
             <header>
@@ -166,7 +175,7 @@ const CreatePoint = () => {
                         <span>Séléctionnez une adresse dans la carte</span>
                     </legend>
 
-                    <Map center={[45.8703421, 1.2636387]} zoom={15}>
+                    <Map center={[45.8703421, 1.2636387]} zoom={15} onClick={handleMapClick}>
                         <TileLayer
                             attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

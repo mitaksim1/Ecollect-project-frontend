@@ -1,5 +1,5 @@
-import React, { useEffect, useState, ChangeEvent } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState, ChangeEvent, FormEvent } from 'react';
+import { Link, useHistory } from 'react-router-dom';
 import { FiArrowLeft } from 'react-icons/fi';
 import { Map, TileLayer, Marker } from 'react-leaflet';
 import { LeafletMouseEvent } from 'leaflet';
@@ -76,6 +76,8 @@ const CreatePoint = () => {
      * State: items séléctionnés
      */
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
+
+    const history = useHistory();
 
     /**
      * Récupères position initial dès chargement de la carte
@@ -183,6 +185,36 @@ const CreatePoint = () => {
         }  
     }
 
+    /**
+     * Fonction qui va soumettre le formulaire
+     */
+    async function handleSubmit(event: FormEvent) {
+        // console.log('handleSubmit');
+        event.preventDefault();
+
+        const { name, email, telephone } = inputData;
+        const region = selectedRegion;
+        const city = selectedCity;
+        const [latitude, longitude] = selectedPosition;
+        const items = selectedItems;
+
+        const data = {
+            name,
+            email,
+            telephone,
+            region,
+            city,
+            latitude, 
+            longitude,
+            items
+        };
+        //console.log(data);
+        await api.post('points', data);
+
+        alert ('Point de collect enregistré');
+
+        history.push('/');
+    }
 
     return (
         <div id="page-create-point">
@@ -195,7 +227,7 @@ const CreatePoint = () => {
                 </Link>  
             </header>
 
-            <form>
+            <form onSubmit={handleSubmit}>
                 <h1>Inscription d'un <br /> point de collecte</h1>
 
                 <fieldset>
@@ -254,14 +286,14 @@ const CreatePoint = () => {
 
                     <div className="field-group">
                         <div className="field">
-                            <label htmlFor="region">Region</label>
+                            <label htmlFor="region">Département</label>
                             <select 
                                 name="region" 
                                 id="region" 
                                 value={selectedRegion} 
                                 onChange={handleSelectRegion}
                             >
-                                <option value="0">Séléctionnez une région</option>
+                                <option value="0">Séléctionnez une département</option>
                                 {regions.map(region => (
                                     <option key={region} value={region}>{region}</option>
                                 ))}
